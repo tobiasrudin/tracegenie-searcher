@@ -1,44 +1,71 @@
 (() => {
+  let page;
+
   function login(WEBSITE, USERNAME, PASSWORD) {
-    const puppeteer = require("puppeteer");
+    return new Promise((resolve, reject) => {
+      const puppeteer = require("puppeteer");
 
-    function delay(timeout) {
-      return new Promise(resolve => {
-        setTimeout(resolve, timeout);
-      });
-    }
+      function delay(timeout) {
+        return new Promise(resolve => {
+          setTimeout(resolve, timeout);
+        });
+      }
 
+      (async () => {
+        const browser = await puppeteer.launch({ headless: false });
+        page = await browser.newPage();
+        await page.setViewport({ width: 1024, height: 768 });
+        await page.goto(WEBSITE);
+
+        await page.$eval(
+          "input[name=amember_pass]",
+          (el, value) => (el.value = value),
+          PASSWORD
+        );
+        await page.$eval(
+          "input[name=amember_login]",
+          (el, value) => (el.value = value),
+          USERNAME
+        );
+
+        await Promise.all([
+          page.click('input[type="submit"]'),
+          page.waitForNavigation({ waitUntil: "networkidle2" })
+        ]);
+
+        await delay(500);
+
+        await Promise.all([
+          page.$eval("#resource-link-folder-3", el => el.click()),
+          page.waitForNavigation({ waitUntil: "networkidle2" })
+        ]);
+        resolve();
+      })();
+    });
+  }
+
+  function search(SURNAME, AREACODE) {
     (async () => {
-      const browser = await puppeteer.launch({ headless: false });
-      const page = await browser.newPage();
-      await page.goto(WEBSITE);
-
       await page.$eval(
-        "input[name=amember_pass]",
+        "input[name=q52]",
         (el, value) => (el.value = value),
-        PASSWORD
-      );
-      await page.$eval(
-        "input[name=amember_login]",
-        (el, value) => (el.value = value),
-        USERNAME
+        SURNAME
       );
 
-      await Promise.all([
-        page.click('input[type="submit"]'),
-        page.waitForNavigation({ waitUntil: "networkidle2" })
-      ]);
+      await page.$eval("input[name=q3222]", el => (el.value = ""));
 
-      await delay(100);
+      await page.$eval(
+        "input[name=q32]",
+        (el, value) => (el.value = value),
+        AREACODE
+      );
 
-      await Promise.all([
-        page.$eval("#resource-link-folder-3", el => el.click()),
-        page.waitForNavigation({ waitUntil: "networkidle2" })
-      ]);
+      page.click("#ajax_bt8");
     })();
   }
 
   module.exports = {
-    login
+    login,
+    search
   };
 })();

@@ -6,5 +6,7 @@
   const USERNAME = process.env.USERNAME;
   const PASSWORD = process.env.PASSWORD;
 
-  tracegenieSearcher.login(WEBSITE, USERNAME, PASSWORD);
+  tracegenieSearcher.login(WEBSITE, USERNAME, PASSWORD).then(() => {
+    tracegenieSearcher.search("Wang", "M1");
+  });
 })();
