@@ -1,0 +1,23 @@
+{
+  "name": "tracegenie-searcher",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tobiasrudin/tracegenie-searcher.git"
+  },
+  "author": "Tobias Rudin",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tobiasrudin/tracegenie-searcher/issues"
+  },
+  "homepage": "https://github.com/tobiasrudin/tracegenie-searcher#readme",
+  "dependencies": {
+    "dotenv": "^6.0.0",
+    "puppeteer": "^1.8.0"
+  }
+}
