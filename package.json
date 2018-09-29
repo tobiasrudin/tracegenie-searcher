@@ -17,6 +17,8 @@
   },
   "homepage": "https://github.com/tobiasrudin/tracegenie-searcher#readme",
   "dependencies": {
+    "babyparse": "^0.4.6",
+    "cheerio": "^1.0.0-rc.2",
     "dotenv": "^6.0.0",
     "puppeteer": "^1.8.0"
   }
