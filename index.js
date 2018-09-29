@@ -4,7 +4,7 @@
   const fileSystemHelper = require("./src/file-system-helper");
   const getDateTimeString = require("./src/get-date-time-string");
   const babyparse = require("babyparse");
-  const AddAlbaHeaders = require("./src/add_alba_headers");
+  const AddAlbaHeaders = require("./src/add-alba-headers");
 
   const OUTPUT_PATH = process.env.OUTPUT_PATH;
 
