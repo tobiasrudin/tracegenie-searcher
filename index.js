@@ -28,7 +28,9 @@
     .parse(await fileSystemHelper.readFile(NAME_LIST_PATH))
     .data.map(element => element[0]);
   if (await fileSystemHelper.fileExists(NAME_LIST_PATH_TEMP)) {
-    nameListTemp = await fileSystemHelper.readFile(NAME_LIST_PATH_TEMP);
+    nameListTemp = babyparse
+      .parse(await fileSystemHelper.readFile(NAME_LIST_PATH_TEMP))
+      .data.map(element => element[0]);
   } else {
     nameListTemp = NAME_LIST.slice();
   }
@@ -51,9 +53,8 @@
   */
   let results;
   if (await fileSystemHelper.fileExists(RESULT_LIST_TEMP)) {
-    results = babyparse.parse(
-      await fileSystemHelper.readFile(RESULT_LIST_TEMP)
-    );
+    results = babyparse.parse(await fileSystemHelper.readFile(RESULT_LIST_TEMP))
+      .data;
   } else {
     results = [];
   }
@@ -67,7 +68,11 @@
       results = results.concat(tempResults);
 
       nameListTemp.shift();
-      await fileSystemHelper.writeFile(NAME_LIST_PATH_TEMP, nameListTemp);
+      if (nameListTemp.length > 0) {
+        await fileSystemHelper.writeFile(NAME_LIST_PATH_TEMP, nameListTemp);
+      } else {
+        await fileSystemHelper.writeFile(NAME_LIST_PATH_TEMP, "");
+      }
       await fileSystemHelper.writeFile(
         RESULT_LIST_TEMP,
         babyparse.unparse(results)
@@ -75,10 +80,14 @@
     }
     nameListTemp = NAME_LIST.slice();
     areaCodeListTemp.shift();
-    await fileSystemHelper.writeFile(
-      AREA_CODE_LIST_PATH_TEMP,
-      areaCodeListTemp
-    );
+    if (areaCodeList.length > 0) {
+      await fileSystemHelper.writeFile(
+        AREA_CODE_LIST_PATH_TEMP,
+        areaCodeListTemp
+      );
+    } else {
+      await fileSystemHelper.writeFile(AREA_CODE_LIST_PATH_TEMP, "");
+    }
   }
 
   results = results.map(person => [

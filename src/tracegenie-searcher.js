@@ -16,6 +16,7 @@
           page = await browser.newPage();
 
           await page.setViewport({ width: 1200, height: 800 });
+          await page.setDefaultNavigationTimeout(90000);
           await page.goto(WEBSITE);
 
           await page.$eval(
@@ -75,7 +76,8 @@
             $("table").each((index, element) => {
               const name = $($(element).find("th:nth-child(2)"))
                 .text()
-                .match(/\S+/g);
+                .replace(/\ \u00a0\ \u00a0\ /g, ",")
+                .split(",");
               const address = $($(element).find("td > h4:nth-child(1)"))
                 .text()
                 .split(",");
@@ -86,7 +88,14 @@
                 city: address[1],
                 areacode: address[2]
               };
-              results.push(person);
+              if (
+                person.surname
+                  .toUpperCase()
+                  .split(" ")
+                  .includes(SURNAME.toUpperCase())
+              ) {
+                results.push(person);
+              }
             });
 
             hasResults = $("table").length ? true : false;
