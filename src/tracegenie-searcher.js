@@ -1,6 +1,9 @@
 (() => {
   let page;
   const cheerio = require("cheerio");
+  const TimeoutError = require("../node_modules/puppeteer/lib/Errors")
+    .TimeoutError;
+  let retries = 0;
 
   function login(WEBSITE, USERNAME, PASSWORD) {
     console.log("logging in");
@@ -16,7 +19,7 @@
           page = await browser.newPage();
 
           await page.setViewport({ width: 1200, height: 800 });
-          await page.setDefaultNavigationTimeout(90000);
+          await page.setDefaultNavigationTimeout(30000);
           await page.goto(WEBSITE);
 
           await page.$eval(
@@ -57,6 +60,7 @@
       let PAGE_NUMBER = 0;
       let hasResults = true;
       let results = [];
+      retries = 0;
       (async () => {
         try {
           while (hasResults) {
@@ -66,8 +70,7 @@
                 "q52=" +
                 SURNAME +
                 "&q3222=&q222=&q32=" +
-                AREACODE +
-                "&D59=",
+                AREACODE,
               { waitUntil: "networkidle2" }
             );
 
@@ -103,7 +106,19 @@
           }
           resolve(results);
         } catch (e) {
-          console.log(e);
+          if (e instanceof TimeoutError) {
+            console.log(e.message);
+            if (retries < 5) {
+              console.log("retrying");
+              retries++;
+              results = await search(SURNAME, AREACODE);
+              resolve(results);
+            } else {
+              throw e;
+            }
+          } else {
+            console.log(e);
+          }
         }
       })();
     });
