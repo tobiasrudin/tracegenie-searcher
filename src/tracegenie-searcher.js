@@ -1,5 +1,5 @@
 (() => {
-  let page;
+  let browser;
   const cheerio = require("cheerio");
 
   function login(WEBSITE, USERNAME, PASSWORD) {
@@ -12,8 +12,8 @@
           const OPTIONS = {
             //headless: false
           };
-          const browser = await puppeteer.launch(OPTIONS);
-          page = await browser.newPage();
+          browser = await puppeteer.launch(OPTIONS);
+          let page = await browser.newPage();
 
           await page.setViewport({ width: 1200, height: 800 });
           await page.setDefaultNavigationTimeout(90000);
@@ -51,13 +51,13 @@
     }
   }
 
-  function search(SURNAME, AREACODE) {
+  async function search(SURNAME, AREACODE) {
+    let page = await browser.newPage();
     console.log("searching name: " + SURNAME + ", area code: " + AREACODE);
     return new Promise((resolve, reject) => {
       let PAGE_NUMBER = 0;
       let hasResults = true;
       let results = [];
-      retries = 0;
       (async () => {
         while (hasResults) {
           try {
@@ -96,7 +96,6 @@
                   .includes(SURNAME.toUpperCase().trim())
               ) {
                 results.push(person);
-                console.log(results.length + " results for name " + SURNAME);
               }
             });
 
