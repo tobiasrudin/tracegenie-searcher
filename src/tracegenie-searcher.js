@@ -1,9 +1,6 @@
 (() => {
   let page;
   const cheerio = require("cheerio");
-  const TimeoutError = require("../node_modules/puppeteer/lib/Errors")
-    .TimeoutError;
-  let retries = 0;
 
   function login(WEBSITE, USERNAME, PASSWORD) {
     console.log("logging in");
@@ -19,7 +16,7 @@
           page = await browser.newPage();
 
           await page.setViewport({ width: 1200, height: 800 });
-          await page.setDefaultNavigationTimeout(30000);
+          await page.setDefaultNavigationTimeout(90000);
           await page.goto(WEBSITE);
 
           await page.$eval(
@@ -62,8 +59,8 @@
       let results = [];
       retries = 0;
       (async () => {
-        try {
-          while (hasResults) {
+        while (hasResults) {
+          try {
             await page.goto(
               "https://www.tracegenie.com/amember4/amember/1DAY/14ntmysqliunion9.php?" +
                 pageString(PAGE_NUMBER) +
@@ -84,42 +81,33 @@
               const address = $($(element).find("td > h4:nth-child(1)"))
                 .text()
                 .split(",");
-              const person = {
+              let person = {
                 firstname: name[0],
                 surname: name[1],
                 street: address[0],
                 city: address[1],
                 areacode: address[2]
               };
+
               if (
                 person.surname
                   .toUpperCase()
                   .split(" ")
-                  .includes(SURNAME.toUpperCase())
+                  .includes(SURNAME.toUpperCase().trim())
               ) {
                 results.push(person);
+                console.log(results.length + " results for name " + SURNAME);
               }
             });
 
             hasResults = $("table").length ? true : false;
             PAGE_NUMBER += 1;
-          }
-          resolve(results);
-        } catch (e) {
-          if (e instanceof TimeoutError) {
-            console.log(e.message);
-            if (retries < 5) {
-              console.log("retrying");
-              retries++;
-              results = await search(SURNAME, AREACODE);
-              resolve(results);
-            } else {
-              throw e;
-            }
-          } else {
-            console.log(e);
+          } catch (e) {
+            console.log(e.toString());
+            console.log("Trying again");
           }
         }
+        resolve(results);
       })();
     });
   }
