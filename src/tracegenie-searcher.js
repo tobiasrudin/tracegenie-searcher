@@ -53,7 +53,6 @@
 
   async function search(SURNAME, AREACODE) {
     let page = await browser.newPage();
-    console.log("searching name: " + SURNAME + ", area code: " + AREACODE);
     return new Promise((resolve, reject) => {
       let PAGE_NUMBER = 0;
       let hasResults = true;
@@ -61,7 +60,15 @@
       (async () => {
         while (hasResults) {
           try {
-            await page.goto(
+            console.log(
+              'Searching ' + 
+              SURNAME + 
+              ' in ' + 
+              AREACODE + 
+              ' - p' + 
+              PAGE_NUMBER);
+              
+              await page.goto(
               "https://www.tracegenie.com/amember4/amember/1DAY/14ntmysqliunion9.php?" +
                 pageString(PAGE_NUMBER) +
                 "q52=" +
@@ -102,8 +109,7 @@
             hasResults = $("table").length ? true : false;
             PAGE_NUMBER += 1;
           } catch (e) {
-            console.log(e.toString());
-            console.log("Trying again");
+            if(!e.toString().includes('Navigation')) console.log(e.toString());
           }
         }
         resolve(results);

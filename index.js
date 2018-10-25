@@ -45,6 +45,11 @@
                 "name: " +
                   name +
                   ", " +
+                  " (" + 
+                  NAME_COUNTER + 
+                  " of " + 
+                  NAME_LIST.length + 
+                  "), " +
                   result.length +
                   " results for area " +
                   areaCode
