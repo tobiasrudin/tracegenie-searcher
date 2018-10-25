@@ -53,6 +53,7 @@
 
   async function search(SURNAME, AREACODE) {
     let page = await browser.newPage();
+    await page.setDefaultNavigationTimeout(90000);
     return new Promise((resolve, reject) => {
       let PAGE_NUMBER = 0;
       let hasResults = true;
