@@ -35,6 +35,8 @@
 
   for (let areaCode of AREA_CODE_LIST) {
     let tempResults;
+    let NAME_COUNTER = 1;
+
     try {
       tempResults = await Promise.all(
         NAME_LIST.map(
@@ -54,6 +56,7 @@
                   " results for area " +
                   areaCode
               );
+              NAME_COUNTER += 1;
               resolve(result);
             })
         )
