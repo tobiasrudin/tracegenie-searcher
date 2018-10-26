@@ -1,5 +1,7 @@
 (() => {
   const fs = require("fs");
+  let parts = [];
+  let inProgress = false;
 
   function readFile(FILEPATH) {
     console.log("reading file: " + FILEPATH);
@@ -52,10 +54,29 @@
     });
   }
 
+  function appendPart(data){
+    parts.push(data);
+    writeNextPart();
+  }
+
+  function writeNextPart(){
+    if (inProgress || parts.length === 0) return;
+  
+    var data = parts.shift();
+    inProgress = true;
+    fs.appendFile('tmpresults.csv', '\r\n' + data, function (err) {
+      inProgress = false;
+      if (err) throw err;
+      writeNextPart();
+    });
+  }
+
   module.exports = {
     readFile,
     writeFile,
     removeFile,
-    fileExists
+    fileExists,
+    appendPart,
+    writeNextPart
   };
 })();
