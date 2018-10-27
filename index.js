@@ -44,11 +44,8 @@
         NAME_LIST.map(
           name =>
             new Promise(async resolve => {
-              if(WEBSITE_YEAR){
-                result = await tracegenieSearcher.search_year(name, areaCode, WEBSITE_YEAR);
-              } else {
-                result = await tracegenieSearcher.search(name, areaCode);
-              }
+              result = await tracegenieSearcher.search(name, areaCode, WEBSITE_YEAR);
+
               console.log(
                 "name: " +
                   name +
@@ -56,7 +53,7 @@
                   " (" + 
                   NAME_COUNTER + 
                   " of " + 
-                  NAME_LIST.length + 
+                  (NAME_LIST.length * AREA_CODE_LIST.length) +
                   "), " +
                   result.length +
                   " results for area " +
@@ -101,6 +98,6 @@
   }
 
   fs.rename('tmpresults.csv', OUTPUT_PATH + "/" + getDateTimeString() + ".csv", function(){
-    console.log(" \nFINISHED\n");
+    console.log(" \nFINISHED. " + results.length + " Addresses Found\n");
   });
 })();
