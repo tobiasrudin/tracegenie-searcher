@@ -1,6 +1,6 @@
 (() => {
   let browser;
-  const cheerio = require("cheerio");
+  const domParser = require("./dom-parser");
 
   function login(WEBSITE, USERNAME, PASSWORD) {
     console.log("logging in");
@@ -58,37 +58,41 @@
       let PAGE_NUMBER = 0;
       let ATTEMPT_NUMBER = 0;
       let hasResults = true;
-      let results = [];
+      const results = [];
       (async () => {
         while (hasResults) {
           try {
             ATTEMPT_NUMBER += 1;
-            if(ATTEMPT_NUMBER == 10) {
+            if (ATTEMPT_NUMBER == 10) {
               console.log(
-                'WARNING: Searching ' + 
-                SURNAME + 
-                ' in ' + 
-                AREACODE + 
-                ' ' + 
-                WEBSITE_YEAR + 
-                ' attempted p' + 
-                PAGE_NUMBER +
-                ' 10 times, 10 tries remaining...');
+                "WARNING: Searching " +
+                  SURNAME +
+                  " in " +
+                  AREACODE +
+                  " " +
+                  WEBSITE_YEAR +
+                  " attempted p" +
+                  PAGE_NUMBER +
+                  " 10 times, 10 tries remaining..."
+              );
             }
-            if(ATTEMPT_NUMBER == 20) {
+            if (ATTEMPT_NUMBER == 20) {
               console.log(
-                'ERROR: Searching ' + 
-                SURNAME + 
-                ' in ' + 
-                AREACODE + 
-                ' failed on p' + 
-                PAGE_NUMBER);
-                resolve([]);//Exit
+                "ERROR: Searching " +
+                  SURNAME +
+                  " in " +
+                  AREACODE +
+                  " failed on p" +
+                  PAGE_NUMBER
+              );
+              resolve([]); //Exit
             }
-            
-            if(WEBSITE_YEAR){
+
+            if (WEBSITE_YEAR) {
               await page.goto(
-                "https://www.tracegenie.com/amember4/amember/1DAY/"+WEBSITE_YEAR+"nt.php?" +
+                "https://www.tracegenie.com/amember4/amember/1DAY/" +
+                  WEBSITE_YEAR +
+                  "nt.php?" +
                   pageString(PAGE_NUMBER) +
                   "q52=" +
                   SURNAME +
@@ -107,41 +111,22 @@
                   "&q3222=&q222=&q32=" +
                   AREACODE,
                 { waitUntil: "networkidle2" }
-              );  
+              );
               var NAME_SELECTOR = "th:nth-child(2)";
               var ADDRESS_SELECTOR = "td > h4:nth-child(1)";
             }
 
-            const $ = cheerio.load(await page.content());
             ATTEMPT_NUMBER = 0;
-            $("br").replaceWith(",");
-            $("table").each((index, element) => {
-              const name = $($(element).find(NAME_SELECTOR))
-                .text()
-                .replace(/\ \u00a0\ \u00a0\ /g, ",")
-                .split(",");
-              const address = $($(element).find(ADDRESS_SELECTOR))
-                .text()
-                .split(",");
+            let pageContent = await page.content();
 
-              if(WEBSITE_YEAR){
-                var person = {
-                  firstname: name[0],
-                  surname: name[1],
-                  street: address[1] + ' ' + address[2],
-                  city: address[5],
-                  areacode: address[6]
-                };
-              } else {
-                var person = {
-                  firstname: name[0],
-                  surname: name[1],
-                  street: address[0],
-                  city: address[1],
-                  areacode: address[2]
-                };
-              }//WEBSITE_YEAR
+            const scrapeResult = domParser.scrapePersons(
+              pageContent,
+              WEBSITE_YEAR,
+              NAME_SELECTOR,
+              ADDRESS_SELECTOR
+            );
 
+            scrapeResult.forEach(person => {
               if (
                 person.surname
                   .toUpperCase()
@@ -152,10 +137,11 @@
               }
             });
 
-            hasResults = $("table").length ? true : false;
+            hasResults = scrapeResult.length ? true : false;
+
             PAGE_NUMBER += 1;
           } catch (e) {
-            if(!e.toString().includes('Navigation')) console.log(e.toString());
+            if (!e.toString().includes("Navigation")) console.log(e.toString());
           }
         }
         resolve(results);

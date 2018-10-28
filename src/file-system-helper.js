@@ -1,7 +1,5 @@
 (() => {
   const fs = require("fs");
-  let parts = [];
-  let inProgress = false;
 
   function readFile(FILEPATH) {
     console.log("reading file: " + FILEPATH);
@@ -54,21 +52,19 @@
     });
   }
 
-  function appendPart(data){
-    parts.push(data);
-    writeNextPart();
+  function renameFile(OLD_FILEPATH, NEW_FILEPATH) {
+    return new Promise((resolve, reject) => {
+      fs.rename(OLD_FILEPATH, NEW_FILEPATH, err => {
+        if (err) {
+          resolve(false);
+        }
+        resolve(true);
+      });
+    });
   }
 
-  function writeNextPart(){
-    if (inProgress || parts.length === 0) return;
-  
-    var data = parts.shift();
-    inProgress = true;
-    fs.appendFile('tmpresults.csv', '\r\n' + data, function (err) {
-      inProgress = false;
-      if (err) throw err;
-      writeNextPart();
-    });
+  function getWriteStream(FILEPATH) {
+    return fs.createWriteStream(FILEPATH, { flags: "a" });
   }
 
   module.exports = {
@@ -76,7 +72,7 @@
     writeFile,
     removeFile,
     fileExists,
-    appendPart,
-    writeNextPart
+    renameFile,
+    getWriteStream
   };
 })();

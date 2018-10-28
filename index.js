@@ -4,8 +4,7 @@
   const fileSystemHelper = require("./src/file-system-helper");
   const getDateTimeString = require("./src/get-date-time-string");
   const babyparse = require("babyparse");
-  const AddAlbaHeaders = require("./src/add-alba-headers");
-  const fs = require('fs');
+  const albaHelper = require("./src/alba-helper");
 
   const OUTPUT_PATH = process.env.OUTPUT_PATH;
 
@@ -16,6 +15,7 @@
 
   const NAME_LIST_PATH = process.env.NAME_LIST_PATH;
   const AREA_CODE_LIST_PATH = process.env.AREA_CODE_LIST_PATH;
+  const TEMP_RESULT_PATH = "tmpresults.csv";
 
   /*
   Read list of names
@@ -33,55 +33,44 @@
 
   let results = [];
 
+  const tempFileStream = fileSystemHelper.getWriteStream(TEMP_RESULT_PATH);
+  tempFileStream.write(babyparse.unparse([albaHelper.getAlbaHeaders()]));
+
   await tracegenieSearcher.login(WEBSITE, USERNAME, PASSWORD);
 
+  let NAME_COUNTER = 1;
   for (let areaCode of AREA_CODE_LIST) {
     let tempResults;
-    let NAME_COUNTER = 1;
 
     try {
       tempResults = await Promise.all(
         NAME_LIST.map(
           name =>
             new Promise(async resolve => {
-              result = await tracegenieSearcher.search(name, areaCode, WEBSITE_YEAR);
+              result = await tracegenieSearcher.search(
+                name,
+                areaCode,
+                WEBSITE_YEAR
+              );
 
               console.log(
                 "name: " +
                   name +
                   ", " +
-                  " (" + 
-                  NAME_COUNTER + 
-                  " of " + 
-                  (NAME_LIST.length * AREA_CODE_LIST.length) +
+                  " (" +
+                  NAME_COUNTER +
+                  " of " +
+                  NAME_LIST.length * AREA_CODE_LIST.length +
                   "), " +
                   result.length +
                   " results for area " +
                   areaCode
               );
               NAME_COUNTER += 1;
-              if(result.length){
-                results = result.map(person => [
-                  ,
-                  ,
-                  ,
-                  ,
-                  person.firstname + " " + person.surname,
-                  ,
-                  person.street,
-                  person.city,
-                  ,
-                  person.areacode,
-                  "England",
-                  ,
-                  ,
-                  ,
-                  ,
-                  ,
-                ]);
+              if (result.length) {
+                results = result.map(albaHelper.mapAlbaColumns);
 
-                if (!fs.existsSync('tmpresults.csv')) AddAlbaHeaders(results);
-                fileSystemHelper.appendPart(babyparse.unparse(results));
+                tempFileStream.write("\n" + babyparse.unparse(results));
               }
               resolve(result);
             })
@@ -97,7 +86,10 @@
     );
   }
 
-  fs.rename('tmpresults.csv', OUTPUT_PATH + "/" + getDateTimeString() + ".csv", function(){
-    console.log(" \nFINISHED. " + results.length + " Addresses Found\n");
-  });
+  await fileSystemHelper.renameFile(
+    TEMP_RESULT_PATH,
+    OUTPUT_PATH + "/" + getDateTimeString() + ".csv"
+  );
+
+  console.log(" \nFINISHED. " + results.length + " Addresses Found\n");
 })();
