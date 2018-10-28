@@ -33,8 +33,12 @@
 
   let results = [];
 
+  await fileSystemHelper.writeFile(
+    TEMP_RESULT_PATH,
+    babyparse.unparse([albaHelper.getAlbaHeaders()])
+  );
+
   const tempFileStream = fileSystemHelper.getWriteStream(TEMP_RESULT_PATH);
-  tempFileStream.write(babyparse.unparse([albaHelper.getAlbaHeaders()]));
 
   await tracegenieSearcher.login(WEBSITE, USERNAME, PASSWORD);
 
