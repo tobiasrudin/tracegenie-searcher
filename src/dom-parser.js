@@ -8,7 +8,7 @@
     ADDRESS_SELECTOR
   ) {
     const $ = cheerio.load(PAGE_CONTENT);
-    const result = [];
+    let result = [];
 
     $("br").replaceWith(",");
     $("table").each((index, element) => {
@@ -41,7 +41,24 @@
     return result;
   }
 
+  function scrapePossibleOptOut(PAGE_CONTENT) {
+    let result = [];
+    const $ = cheerio.load(PAGE_CONTENT);
+    $("font:nth-child(2) > b").each((index, element) => {
+      result.push(
+        $(element)
+          .text()
+          .replace(",", "")
+          .replace(/\u00a0/g, " ")
+          .toUpperCase()
+          .split(" ")
+      );
+    });
+    return result;
+  }
+
   module.exports = {
-    scrapePersons
+    scrapePersons,
+    scrapePossibleOptOut
   };
 })();
