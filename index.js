@@ -5,6 +5,7 @@
   const getDateTimeString = require("./src/get-date-time-string");
   const babyparse = require("babyparse");
   const AddAlbaHeaders = require("./src/add-alba-headers");
+  const fs = require('fs');
 
   const OUTPUT_PATH = process.env.OUTPUT_PATH;
 
@@ -43,11 +44,8 @@
         NAME_LIST.map(
           name =>
             new Promise(async resolve => {
-              if(WEBSITE_YEAR){
-                result = await tracegenieSearcher.search_year(name, areaCode, WEBSITE_YEAR);
-              } else {
-                result = await tracegenieSearcher.search(name, areaCode);
-              }
+              result = await tracegenieSearcher.search(name, areaCode, WEBSITE_YEAR);
+
               console.log(
                 "name: " +
                   name +
@@ -55,13 +53,36 @@
                   " (" + 
                   NAME_COUNTER + 
                   " of " + 
-                  NAME_LIST.length + 
+                  (NAME_LIST.length * AREA_CODE_LIST.length) +
                   "), " +
                   result.length +
                   " results for area " +
                   areaCode
               );
               NAME_COUNTER += 1;
+              if(result.length){
+                results = result.map(person => [
+                  ,
+                  ,
+                  ,
+                  ,
+                  person.firstname + " " + person.surname,
+                  ,
+                  person.street,
+                  person.city,
+                  ,
+                  person.areacode,
+                  "England",
+                  ,
+                  ,
+                  ,
+                  ,
+                  ,
+                ]);
+
+                if (!fs.existsSync('tmpresults.csv')) AddAlbaHeaders(results);
+                fileSystemHelper.appendPart(babyparse.unparse(results));
+              }
               resolve(result);
             })
         )
@@ -76,33 +97,7 @@
     );
   }
 
-  results = results.map(person => [
-    ,
-    ,
-    ,
-    ,
-    person.firstname + " " + person.surname,
-    ,
-    person.street,
-    person.city,
-    ,
-    person.areacode,
-    "England",
-    ,
-    ,
-    ,
-    ,
-    ,
-  ]);
-
-  AddAlbaHeaders(results);
-
-  console.log("final results: ", results);
-
-  await fileSystemHelper.writeFile(
-    OUTPUT_PATH + "/" + getDateTimeString() + ".csv",
-    babyparse.unparse(results)
-  );
-
-  console.log(" \nFINISHED\n");
+  fs.rename('tmpresults.csv', OUTPUT_PATH + "/" + getDateTimeString() + ".csv", function(){
+    console.log(" \nFINISHED. " + results.length + " Addresses Found\n");
+  });
 })();
