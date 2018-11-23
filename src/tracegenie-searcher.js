@@ -126,11 +126,17 @@
               ADDRESS_SELECTOR
             );
 
-            scrapeResult.forEach(async person => {
-              if (await nameInLatestYear(person, SURNAME)) {
+            for (let person of scrapeResult) {
+              if (
+                person.surname
+                  .toUpperCase()
+                  .split(" ")
+                  .includes(SURNAME.toUpperCase().trim()) &&
+                (await nameInLatestYear(person, SURNAME))
+              ) {
                 results.push(person);
               }
-            });
+            }
 
             hasResults = scrapeResult.length ? true : false;
 
@@ -149,28 +155,22 @@
     return new Promise(async (resolve, reject) => {
       let page = await browser.newPage();
       await page.setDefaultNavigationTimeout(90000);
-      if (
-        person.surname
-          .toUpperCase()
-          .split(" ")
-          .includes(SURNAME.toUpperCase().trim())
-      ) {
-        await page.goto(
-          "https://www.tracegenie.com/amember4/amember/1DAY/occs.php?q52o=" +
-            person.street +
-            "&q322o=" +
-            person.areacode,
-          { waitUntil: "networkidle2" }
-        );
 
-        let pageContent = await page.content();
-        await page.close();
-        let names = domParser.scrapePossibleOptOut(pageContent);
-        if (names.some(array => array.includes(SURNAME.toUpperCase().trim()))) {
-          resolve(true);
-        } else {
-          resolve(false);
-        }
+      await page.goto(
+        "https://www.tracegenie.com/amember4/amember/1DAY/occs.php?q52o=" +
+          person.street +
+          "&q322o=" +
+          person.areacode,
+        { waitUntil: "networkidle2" }
+      );
+
+      let pageContent = await page.content();
+      await page.close();
+      let names = domParser.scrapePossibleOptOut(pageContent);
+      if (names.some(array => array.includes(SURNAME.toUpperCase().trim()))) {
+        resolve(true);
+      } else {
+        resolve(false);
       }
     });
   }

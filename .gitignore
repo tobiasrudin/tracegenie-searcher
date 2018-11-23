@@ -118,3 +118,4 @@ output
 input/*
 output/*
 TODO
+*.csv

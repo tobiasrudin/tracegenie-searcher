@@ -39,6 +39,9 @@
   );
 
   const tempFileStream = fileSystemHelper.getWriteStream(TEMP_RESULT_PATH);
+  tempFileStream.on("error", error => {
+    console.log(error);
+  });
 
   await tracegenieSearcher.login(WEBSITE, USERNAME, PASSWORD);
 
@@ -72,9 +75,9 @@
               );
               NAME_COUNTER += 1;
               if (result.length) {
-                results = result.map(albaHelper.mapAlbaColumns);
+                let tempFileResults = result.map(albaHelper.mapAlbaColumns);
 
-                tempFileStream.write("\n" + babyparse.unparse(results));
+                tempFileStream.write("\n" + babyparse.unparse(tempFileResults));
               }
               resolve(result);
             })
@@ -90,10 +93,18 @@
     );
   }
 
-  await fileSystemHelper.renameFile(
-    TEMP_RESULT_PATH,
-    OUTPUT_PATH + "/" + getDateTimeString() + ".csv"
+  await fileSystemHelper.writeFile(
+    OUTPUT_PATH + "/results_" + getDateTimeString() + ".csv",
+    babyparse.unparse(results)
   );
 
-  console.log(" \nFINISHED. " + results.length + " Addresses Found\n");
+  tempFileStream.on("finish", async function() {
+    await fileSystemHelper.renameFile(
+      TEMP_RESULT_PATH,
+      OUTPUT_PATH + "/" + getDateTimeString() + ".csv"
+    );
+
+    console.log(" \nFINISHED. " + results.length + " Addresses Found\n");
+  });
+  tempFileStream.end();
 })();
