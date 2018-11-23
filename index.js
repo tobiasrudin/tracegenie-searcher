@@ -72,9 +72,9 @@
               );
               NAME_COUNTER += 1;
               if (result.length) {
-                results = result.map(albaHelper.mapAlbaColumns);
+                tempFileResults = result.map(albaHelper.mapAlbaColumns);
 
-                tempFileStream.write("\n" + babyparse.unparse(results));
+                tempFileStream.write("\n" + babyparse.unparse(tempFileResults));
               }
               resolve(result);
             })
@@ -89,6 +89,12 @@
       )
     );
   }
+  console.log(results);
+
+  await fileSystemHelper.writeFile(
+    OUTPUT_PATH + "/results_" + getDateTimeString() + ".csv",
+    babyparse.unparse(results)
+  );
 
   await fileSystemHelper.renameFile(
     TEMP_RESULT_PATH,
