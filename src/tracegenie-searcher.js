@@ -54,7 +54,8 @@
 
   async function search(SURNAME, AREACODE, WEBSITE_YEAR) {
     let page = await browser.newPage();
-    await page.setDefaultNavigationTimeout(90000);
+    let RANDOM_TIMEOUT_TIME = Math.floor((Math.random() * 40000) + 50000);
+    await page.setDefaultNavigationTimeout(RANDOM_TIMEOUT_TIME);
     return new Promise((resolve, reject) => {
       let PAGE_NUMBER = 0;
       let ATTEMPT_NUMBER = 0;
