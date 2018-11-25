@@ -78,7 +78,7 @@
                   " 50 times, 50 tries remaining..."
               );
             }
-            if(ATTEMPT_NUMBER == 50) {
+            if(ATTEMPT_NUMBER == 100) {
               let error_message = 'ERROR: Searching ' + 
               SURNAME + 
               ' in ' + 
