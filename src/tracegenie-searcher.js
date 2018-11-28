@@ -1,9 +1,9 @@
 (() => {
   let browser;
   const domParser = require("./dom-parser");
+  const fs = require('fs');
 
   function login(WEBSITE, USERNAME, PASSWORD) {
-    console.log("logging in");
     return new Promise((resolve, reject) => {
       const puppeteer = require("puppeteer");
 
@@ -35,6 +35,7 @@
             page.waitForNavigation({ waitUntil: "networkidle2" }),
             page.waitForSelector("#resource-link-folder-3")
           ]);
+          console.log("logged in, starting search...");
           resolve();
         } catch (error) {
           console.log(error);
@@ -53,7 +54,8 @@
 
   async function search(SURNAME, AREACODE, WEBSITE_YEAR) {
     let page = await browser.newPage();
-    await page.setDefaultNavigationTimeout(90000);
+    let RANDOM_TIMEOUT_TIME = Math.floor((Math.random() * 40000) + 50000);
+    await page.setDefaultNavigationTimeout(RANDOM_TIMEOUT_TIME);
     return new Promise((resolve, reject) => {
       let PAGE_NUMBER = 0;
       let ATTEMPT_NUMBER = 0;
@@ -63,7 +65,7 @@
         while (hasResults) {
           try {
             ATTEMPT_NUMBER += 1;
-            if (ATTEMPT_NUMBER == 10) {
+            if (ATTEMPT_NUMBER == 50) {
               console.log(
                 "WARNING: Searching " +
                   SURNAME +
@@ -73,19 +75,21 @@
                   WEBSITE_YEAR +
                   " attempted p" +
                   PAGE_NUMBER +
-                  " 10 times, 10 tries remaining..."
+                  " 50 times, 50 tries remaining..."
               );
             }
-            if (ATTEMPT_NUMBER == 20) {
-              console.log(
-                "ERROR: Searching " +
-                  SURNAME +
-                  " in " +
-                  AREACODE +
-                  " failed on p" +
-                  PAGE_NUMBER
-              );
-              resolve([]); //Exit
+            if(ATTEMPT_NUMBER == 100) {
+              let error_message = 'ERROR: Searching ' + 
+              SURNAME + 
+              ' in ' + 
+              AREACODE + 
+              ' failed on p' + 
+              PAGE_NUMBER;
+              console.log(error_message + '\r\n');
+              fs.appendFile('error_log.txt', SURNAME + ', ' + AREACODE + '\r\n', function (err) {
+                if (err) throw err;
+                resolve([]);//Exit
+              });
             }
 
             if (WEBSITE_YEAR) {

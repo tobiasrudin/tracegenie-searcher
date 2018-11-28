@@ -45,9 +45,9 @@
 
   await tracegenieSearcher.login(WEBSITE, USERNAME, PASSWORD);
 
-  let NAME_COUNTER = 1;
-  for (let areaCode of AREA_CODE_LIST) {
+  for (let [index, areaCode] of AREA_CODE_LIST.entries()) {
     let tempResults;
+    let NAME_COUNTER = 1 + (index * NAME_LIST.length);
 
     try {
       tempResults = await Promise.all(
